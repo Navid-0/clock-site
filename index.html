@@ -2,119 +2,137 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Hamburg Time & Weather</title>
+<title>Hamburg Offline</title>
 
 <style>
-  body {
+  body, html {
     margin: 0;
-    font-family: Arial, sans-serif;
+    height: 100%;
+    overflow: hidden;
+    font-family: Arial;
     color: white;
-    text-align: center;
-    height: 100vh;
+  }
+
+  .bg {
+    position: fixed;
+    width: 100%;
+    height: 100%;
     background-size: cover;
     background-position: center;
-    transition: background-image 1s ease-in-out;
+    transition: opacity 1.5s ease-in-out;
   }
+
+  #bg1 { z-index: 1; }
+  #bg2 { z-index: 2; }
 
   .overlay {
-    background: rgba(0,0,0,0.45);
+    position: relative;
+    z-index: 3;
     height: 100%;
+    background: rgba(0,0,0,0.4);
     display: flex;
-    flex-direction: column;
     justify-content: center;
     align-items: center;
+    flex-direction: column;
   }
 
-  #clock {
-    font-size: 300px;
-    margin-bottom: 10px;
-  }
-
-  #date {
-    font-size: 200px;
-    margin-bottom: 20px;
-  }
-
-  #weather {
-    font-size: 152px;
-  }
+  #clock { font-size: 300px; }
+  #date { font-size: 100px; }
+  #weather { font-size: 80px; margin-top: 20px; }
 </style>
 </head>
 
 <body>
 
+<div id="bg1" class="bg"></div>
+<div id="bg2" class="bg"></div>
+
 <div class="overlay">
   <div id="clock"></div>
   <div id="date"></div>
-  <div id="weather">Loading weather...</div>
+  <div id="weather">Loading...</div>
 </div>
 
 <script>
-// ⏰ ساعت و تاریخ میلادی هامبورگ
+
+// ⏰ ساعت هامبورگ
 function updateTime() {
   const now = new Date();
 
-  const time = now.toLocaleTimeString('en-GB', { timeZone: 'Europe/Berlin' });
-  const date = now.toLocaleDateString('en-GB', { 
-    timeZone: 'Europe/Berlin',
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  });
+  document.getElementById("clock").innerText =
+    now.toLocaleTimeString('en-GB', { timeZone: 'Europe/Berlin' });
 
-  document.getElementById("clock").innerText = time;
-  document.getElementById("date").innerText = date;
+  document.getElementById("date").innerText =
+    now.toLocaleDateString('en-GB', {
+      timeZone: 'Europe/Berlin',
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
 }
-
 setInterval(updateTime, 1000);
 updateTime();
 
 
-// 🌤️ آب‌وهوای هامبورگ
+// 🌤️ آب‌وهوا (آنلاین)
 async function getWeather() {
-  const url = "https://api.open-meteo.com/v1/forecast?latitude=53.55&longitude=10.00&current_weather=true";
-
   try {
-    const res = await fetch(url);
+    const res = await fetch("https://api.open-meteo.com/v1/forecast?latitude=53.55&longitude=10.00&current_weather=true");
     const data = await res.json();
 
-    const temp = data.current_weather.temperature;
-    const wind = data.current_weather.windspeed;
-
     document.getElementById("weather").innerText =
-      `🌡️ ${temp}°C | 💨 ${wind} km/h`;
+      `Hamburg 🌡️ ${data.current_weather.temperature}°C`;
   } catch {
-    document.getElementById("weather").innerText = "Weather error";
+    document.getElementById("weather").innerText = "Offline mode";
   }
 }
-
 getWeather();
-setInterval(getWeather, 600000);
 
 
-// 🌄 عکس‌های ایران و آلمان
+// 🖼️ تصاویر آفلاین
 const images = [
-  // 🇮🇷 ایران
-  "https://images.unsplash.com/photo-1600531625536-cd6a0d8a6e8c", // شیراز
-  "https://images.unsplash.com/photo-1591604129939-f1efa4d9f7fa", // اصفهان
-  "https://images.unsplash.com/photo-1614346991477-1b51f2f7b98e", // شمال
-
-  // 🇩🇪 آلمان
-  "https://images.unsplash.com/photo-1502602898657-3e91760cbb34", // برلین
-  "https://images.unsplash.com/photo-1471623817296-1fddbc1a5c2c", // هامبورگ
-  "https://images.unsplash.com/photo-1528728329032-2972f65dfb3f"  // مونیخ
+  "images/1.jpg",
+  "images/2.jpg",
+  "images/3.jpg",
+  "images/4.jpg",
+  "images/5.jpg",
+  "images/6.jpg",
+  "images/7.jpg",
+  "images/8.jpg",
+  "images/9.jpg",
+  "images/10.jpg"
 ];
 
 let index = 0;
+let current = 1;
 
+const bg1 = document.getElementById("bg1");
+const bg2 = document.getElementById("bg2");
+
+// تصویر اول
+bg1.style.backgroundImage = `url(${images[0]})`;
+bg1.style.opacity = 1;
+bg2.style.opacity = 0;
+
+// تغییر تصویر
 function changeBackground() {
-  document.body.style.backgroundImage = `url(${images[index]})`;
   index = (index + 1) % images.length;
+
+  if (current === 1) {
+    bg2.style.backgroundImage = `url(${images[index]})`;
+    bg2.style.opacity = 1;
+    bg1.style.opacity = 0;
+    current = 2;
+  } else {
+    bg1.style.backgroundImage = `url(${images[index]})`;
+    bg1.style.opacity = 1;
+    bg2.style.opacity = 0;
+    current = 1;
+  }
 }
 
 setInterval(changeBackground, 5000);
-changeBackground();
 
 </script>
 
