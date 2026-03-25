@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Hamburg Time & Weather</title>
+
+<style>
+  body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    color: white;
+    text-align: center;
+    height: 100vh;
+    background-size: cover;
+    background-position: center;
+    transition: background-image 1s ease-in-out;
+  }
+
+  .overlay {
+    background: rgba(0,0,0,0.45);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+
+  #clock {
+    font-size: 65px;
+    margin-bottom: 10px;
+  }
+
+  #date {
+    font-size: 28px;
+    margin-bottom: 20px;
+  }
+
+  #weather {
+    font-size: 22px;
+  }
+</style>
+</head>
+
+<body>
+
+<div class="overlay">
+  <div id="clock"></div>
+  <div id="date"></div>
+  <div id="weather">Loading weather...</div>
+</div>
+
+<script>
+// ⏰ ساعت و تاریخ میلادی هامبورگ
+function updateTime() {
+  const now = new Date();
+
+  const time = now.toLocaleTimeString('en-GB', { timeZone: 'Europe/Berlin' });
+  const date = now.toLocaleDateString('en-GB', { 
+    timeZone: 'Europe/Berlin',
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+
+  document.getElementById("clock").innerText = time;
+  document.getElementById("date").innerText = date;
+}
+
+setInterval(updateTime, 1000);
+updateTime();
+
+
+// 🌤️ آب‌وهوای هامبورگ
+async function getWeather() {
+  const url = "https://api.open-meteo.com/v1/forecast?latitude=53.55&longitude=10.00&current_weather=true";
+
+  try {
+    const res = await fetch(url);
+    const data = await res.json();
+
+    const temp = data.current_weather.temperature;
+    const wind = data.current_weather.windspeed;
+
+    document.getElementById("weather").innerText =
+      `🌡️ ${temp}°C | 💨 ${wind} km/h`;
+  } catch {
+    document.getElementById("weather").innerText = "Weather error";
+  }
+}
+
+getWeather();
+setInterval(getWeather, 600000);
+
+
+// 🌄 عکس‌های ایران و آلمان
+const images = [
+  // 🇮🇷 ایران
+  "https://images.unsplash.com/photo-1600531625536-cd6a0d8a6e8c", // شیراز
+  "https://images.unsplash.com/photo-1591604129939-f1efa4d9f7fa", // اصفهان
+  "https://images.unsplash.com/photo-1614346991477-1b51f2f7b98e", // شمال
+
+  // 🇩🇪 آلمان
+  "https://images.unsplash.com/photo-1502602898657-3e91760cbb34", // برلین
+  "https://images.unsplash.com/photo-1471623817296-1fddbc1a5c2c", // هامبورگ
+  "https://images.unsplash.com/photo-1528728329032-2972f65dfb3f"  // مونیخ
+];
+
+let index = 0;
+
+function changeBackground() {
+  document.body.style.backgroundImage = `url(${images[index]})`;
+  index = (index + 1) % images.length;
+}
+
+setInterval(changeBackground, 5000);
+changeBackground();
+
+</script>
+
+</body>
+</html>
